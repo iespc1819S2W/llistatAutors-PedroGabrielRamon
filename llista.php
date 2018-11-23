@@ -1,30 +1,39 @@
 <?php
 $mysqli = new mysqli("localhost", "biblioteca", "1", "biblioteca");
 $mysqli->set_charset("utf8");
-$ordenat="order by ID_AUT asc";
+$ordre="asc";
+$ordenat="ID_AUT";
+
+if(isset($_POST["ordre"])){
+	$ordre=$_POST["ordre"];
+}
+
+if(isset($_POST["ordenat"])){
+	$ordenat=$_POST["ordenat"];
+}
+
 if(isset($_POST["id_aut_asc"])){
-$ordenat="order by ID_AUT asc";
+$ordenat="ID_AUT";
+$ordre="asc";
 };
 if(isset($_POST["id_aut_desc"])){
-$ordenat="order by ID_AUT desc";
+$ordre="desc";
+$ordenat="ID_AUT";
 };
 if(isset($_POST["nom_aut_asc"])){
-$ordenat="order by NOM_AUT asc";
+$ordre="asc";
+$ordenat="NOM_AUT";
 };
 if(isset($_POST["nom_aut_desc"])){
-$ordenat="order by NOM_AUT desc";
+$ordenat="NOM_AUT";
+$ordre="desc";
 };
 $pagina=1;
 $valorinicial=0;
 $valorultim=20;
 $cantidad="";
 $paginaTotales="";
-	if(isset($_POST["pagina"])){
-		$pagina=$_POST["pagina"];
-		$valorinicial=20*$pagina;
-	}
 
-if(isset($_POST["ultimo"])){
 	$queryUltimo="select count(*) as 'cantidad' from AUTORS";
 	if ($cursor=$mysqli->query($queryUltimo)) {
 	while ($row = $cursor->fetch_assoc()) {
@@ -37,55 +46,53 @@ $paginaTotales-=1;
  $cursor->free();
 
 };
+
+	if(isset($_POST["pagina"])){
+		$pagina=$_POST["pagina"];
+		if($pagina>1){
+		$valorinicial=20*$pagina;
+	} else {
+		$valorinicial=0;
+	}
+	}
+
+if(isset($_POST["ultimo"])){
 $valorinicial=$paginaTotales*20;
 $pagina=$paginaTotales;	
 }
 if(isset($_POST["primero"])){
 $valorinicial=0;
+$pagina=1;
 }
 if(isset($_POST["siguiente"])){
+	if($pagina!=$paginaTotales){
+		$pagina++;
 	$valorinicial=20*$pagina;
-	$pagina++;
 	
-	
-}
+	};
+};
 if(isset($_POST["atras"])){
+	if($pagina>1){
+		$pagina--;
 	$valorinicial=20*$pagina;
-	$pagina--;
-}
+} else {
+	$pagina=1;
+	$valorinicial=0;
+}};
 
  ?>
 <!DOCTYPE html>
 <html>
 <head>
+	<link rel="stylesheet" href="llista.css"/>
 <title></title>
-<style>
-/* ceil(50/100)*/
-*{text-align: center; margin:auto; }
-table{margin:auto;border:solid 1px;}
-.pagination button {
-    color: black;
-    float: left;
-    padding: 8px 16px;
-    text-decoration: none;
-    transition: background-color .3s;
-    border: 1px solid #ddd;
-    margin: 0 4px;
-}
-.pagination {
-    display: inline-block;
-}
-button:hover{
-	background-color: #4CAF50;
-    color: white;
-    border: 1px solid #4CAF50;
-}
-</style>
 </head>
 <body>
 <form action='llista.php' METHOD='POST'>
 <div>
 	<div>
+	<input type="hidden" name="ordenat" value="<?=$ordenat?>">
+	<input type="hidden" name="ordre" value="<?=$ordre?>">
 	<input type="hidden" name="pagina" value="<?=$pagina?>">
 	<button name='id_aut_asc'>Codi ascendent</button>
 	<button name='id_aut_desc'>Codi descendent</button>
@@ -105,9 +112,9 @@ button:hover{
 <?php
 
 
+// order by ID_AUT desc                 
 
-
-$query="select * from AUTORS ".$ordenat." limit ".$valorinicial.",".$valorultim;
+$query="select * from AUTORS order by ".$ordenat." ".$ordre." limit ".$valorinicial.",".$valorultim;
 
 
 echo "<table>";
@@ -125,8 +132,8 @@ if ($cursor=$mysqli->query($query)) {
 
 };
 echo "</table>";
-
 $mysqli->close();
+echo "<span>".$pagina."/".$paginaTotales."</span>";
 echo "</body>";
 echo "</html>";
 ?>
