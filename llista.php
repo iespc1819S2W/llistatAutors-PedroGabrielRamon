@@ -10,9 +10,8 @@ if(isset($_POST["pagina"])){
 }
 $quantitat=20;
 /* FIN DE PAGINA */
-
 /* Comprobacion de ordenacion */
-if(isset($_POST["ordre"])&&isset($_POST["ordre"])){
+if(isset($_POST["ordre"])&&isset($_POST["quien"])){
 	$ordre=$_POST["ordre"];
 	$quien=$_POST["quien"];
 } else {
@@ -50,6 +49,21 @@ if(isset($_POST["filtro"])){
 	$filtro="";
 }
 /* FIN DEL FILTRO */
+/* COMPROBAR BOTON */
+$idaut="";
+if(isset($_POST["editar"])){
+	$idaut=$_POST["editar"];
+}
+/* COMPROBACION DEL BOTON CONFIRMAR */
+if(isset($_POST["modificacion"])){
+	$modificacion=$_POST["modificacion"];
+	$nomedit=$mysqli->real_escape_string($_POST["nomedit"]);
+	$query="update AUTORS SET NOM_AUT = '$nomedit' where ID_AUT=$modificacion   ";
+	$cursor=$mysqli->query($query)OR die($query);
+}
+/* FIN COMPROBACION DEL BOTON CONFIRMAR */
+/* FIN DEL COMPROBAR BOTON*/
+
 /* CONTAR TODAS LAS PAGINAS */
 $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or NOM_AUT like '%".$filtro."%'";
  if ($cursor=$mysqli->query($query)OR die($query)){
@@ -95,7 +109,7 @@ $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or
 <link rel="stylesheet" href="llista.css"/>
 </head>
 <body>
-<form action='llista.php' METHOD='POST'>
+<form id="form" action='llista.php' METHOD='POST'>
 <div>
 	<div>
 	
@@ -130,8 +144,16 @@ echo "<table>";
 if ($cursor=$mysqli->query($query)OR die($query)) {
 	while ($row = $cursor->fetch_assoc()) {
 		echo "<tr>";
- echo "<td>".$row["ID_AUT"].'</td><td>'. $row["NOM_AUT"]."</td>"; 
+		if($idaut==$row["ID_AUT"]){
+			 echo "<td>".$row["ID_AUT"]."</td>
+			 <td><input form='form' type='text' name='nomedit' value='{$row["NOM_AUT"]}'></td>
+			 <td><button form='form' type='submit' name='cancelar'>Cancelar</button></td><td><button form='form' name='modificacion' value=".$row['ID_AUT'].">Confirmar</button></td>";
+		} else {
+/* FIN DE ACCIONES*/
+
+	echo "<td>".$row["ID_AUT"].'</td><td>'. $row["NOM_AUT"]."</td><td><button name='editar' form='form' type='submit' value=".$row["ID_AUT"].">Editar</a></td><td><button type='submit' name='borrar' value=".$row["ID_AUT"].">Borrar</a></td>"; 
  echo "</tr>";
+ 	}
  };
  $cursor->free();
  }
