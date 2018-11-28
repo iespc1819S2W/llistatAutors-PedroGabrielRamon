@@ -64,6 +64,28 @@ if(isset($_POST["modificacion"])){
 /* FIN COMPROBACION DEL BOTON CONFIRMAR */
 /* FIN DEL COMPROBAR BOTON*/
 
+/* INICIO AÑADIR AUTOR */
+if(isset($_POST["inputnouautor"])){
+	if(isset($_POST["nou"])){
+		$nouautor=$mysqli->real_escape_string($_POST["inputnouautor"]);
+
+		$nouautor=trim($nouautor," ");
+		if(strlen($nouautor)!=0){
+			$query='INSERT INTO `AUTORS`(`ID_AUT`, `NOM_AUT`) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'")';
+			$cursor=$mysqli->query($query)OR die($query);
+		}
+	}
+	
+}
+/* FIN AÑADIR AUTOR */
+/* BORRAR AUTOR */
+if(isset($_POST["borrar"])){
+	$borrar=$_POST["borrar"];
+	$query="delete from AUTORS where ID_AUT=$borrar";
+	$cursor=$mysqli->query($query)OR die($query);
+}
+/* FIN BORRAR AUTOR*/
+
 /* CONTAR TODAS LAS PAGINAS */
 $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or NOM_AUT like '%".$filtro."%'";
  if ($cursor=$mysqli->query($query)OR die($query)){
@@ -149,15 +171,16 @@ if ($cursor=$mysqli->query($query)OR die($query)) {
 			 <td><input form='form' type='text' name='nomedit' value='{$row["NOM_AUT"]}'></td>
 			 <td><button form='form' type='submit' name='cancelar'>Cancelar</button></td><td><button form='form' name='modificacion' value=".$row['ID_AUT'].">Confirmar</button></td>";
 		} else {
-/* FIN DE ACCIONES*/
 
-	echo "<td>".$row["ID_AUT"].'</td><td>'. $row["NOM_AUT"]."</td><td><button name='editar' form='form' type='submit' value=".$row["ID_AUT"].">Editar</a></td><td><button type='submit' name='borrar' value=".$row["ID_AUT"].">Borrar</a></td>"; 
+	echo "<td>".$row["ID_AUT"].'</td><td>'. $row["NOM_AUT"]."</td><td><button name='editar' form='form' type='submit' value=".$row["ID_AUT"].">Editar</a></td><td><button form='form' type='submit' name='borrar' value=".$row["ID_AUT"].">Borrar</a></td>"; 
  echo "</tr>";
  	}
  };
  $cursor->free();
  }
 echo "</table>";
+echo "<br><label for='nouautor'>Afegir nou Atutor</label><br>";
+echo "<input form='form' type='text' name='inputnouautor'></td><button form='form' type=input name='nou'>Añadir</button><br>";
 echo "$pagina/$paginas";
 $mysqli->close();
 echo "</body>";
