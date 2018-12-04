@@ -1,7 +1,7 @@
 <?php
 $mysqli = new mysqli("localhost", "biblioteca", "1", "biblioteca");
 $mysqli->set_charset("utf8");
-
+require_once("funciones.php");
 /* PAGINA */
 if(isset($_POST["pagina"])){
 	$pagina=$_POST["pagina"];
@@ -71,7 +71,7 @@ if(isset($_POST["inputnouautor"])){
 
 		$nouautor=trim($nouautor," ");
 		if(strlen($nouautor)!=0){
-			$query='INSERT INTO `AUTORS`(`ID_AUT`, `NOM_AUT`) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'")';
+			$query='INSERT INTO AUTORS(ID_AUT, NOM_AUT) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'")';
 			$cursor=$mysqli->query($query)OR die($query);
 		}
 	}
@@ -87,7 +87,7 @@ if(isset($_POST["borrar"])){
 /* FIN BORRAR AUTOR*/
 
 /* CONTAR TODAS LAS PAGINAS */
-$query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or NOM_AUT like '%".$filtro."%'";
+$query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or NOM_AUT like '%".$filtro."%' or FK_NACIONALITAT like '".$filtro."'";
  if ($cursor=$mysqli->query($query)OR die($query)){
  while ($row=$cursor->fetch_assoc()) {
   $filas=$row['numero'];
@@ -121,8 +121,11 @@ $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or
  /* Calculo de paginas */
 
   $fila=($pagina-1)*$quantitat;
-  $query="select ID_AUT,NOM_AUT from AUTORS where ID_AUT like '".$filtro."' or NOM_AUT like '%".$filtro."%' order by ".$quien." ".$ordre." limit ".$fila.",".$quantitat;
+  $query="select ID_AUT,NOM_AUT,FK_NACIONALITAT from AUTORS where ID_AUT like '".$filtro."' or NOM_AUT like '%".$filtro."%' or FK_NACIONALITAT like '".$filtro."' order by ".$quien." ".$ordre." limit ".$fila.",".$quantitat;
   /* FIN DEL CALCULO */
+  /* QUERY PARA SELECT */
+  $querySelect= "SELECT * FROM NACIONALITATS";
+  /*FIN QUERY PARA SELECT */
 ?>
 <!DOCTYPE html>
 <html>
@@ -161,7 +164,7 @@ $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or
 <?php
 echo "<table>";
 		echo "<tr>";
- echo "<td>ID Autor</td><td>Nom Autor</td>"; 
+ echo "<td>ID Autor</td><td>Nom Autor</td><td>Nacionalitat</td>"; 
 		echo "</tr>";
 if ($cursor=$mysqli->query($query)OR die($query)) {
 	while ($row = $cursor->fetch_assoc()) {
@@ -169,10 +172,11 @@ if ($cursor=$mysqli->query($query)OR die($query)) {
 		if($idaut==$row["ID_AUT"]){
 			 echo "<td>".$row["ID_AUT"]."</td>
 			 <td><input form='form' type='text' name='nomedit' value='{$row["NOM_AUT"]}'></td>
+			 <td>".creacionSelect($mysqli,$querySelect,'nacionalitat','FK_NACIONALITAT','FK_NACIONALITAT','form')."</td>
 			 <td><button form='form' type='submit' name='cancelar'>Cancelar</button></td><td><button form='form' name='modificacion' value=".$row['ID_AUT'].">Confirmar</button></td>";
 		} else {
 
-	echo "<td>".$row["ID_AUT"].'</td><td>'. $row["NOM_AUT"]."</td><td><button name='editar' form='form' type='submit' value=".$row["ID_AUT"].">Editar</a></td><td><button form='form' type='submit' name='borrar' value=".$row["ID_AUT"].">Borrar</a></td>"; 
+	echo "<td>".$row["ID_AUT"].'</td><td>'. $row["NOM_AUT"]."</td><td>".$row['FK_NACIONALITAT']."</td><td><button name='editar' form='form' type='submit' value=".$row["ID_AUT"].">Editar</a></td><td><button form='form' type='submit' name='borrar' value=".$row["ID_AUT"].">Borrar</a></td>"; 
  echo "</tr>";
  	}
  };
