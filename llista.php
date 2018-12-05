@@ -56,10 +56,19 @@ if(isset($_POST["editar"])){
 }
 /* COMPROBACION DEL BOTON CONFIRMAR */
 if(isset($_POST["modificacion"])){
+	echo "<pre>";
+	print_r($_POST);
+	echo "</pre>";
 	$modificacion=$_POST["modificacion"];
 	$nomedit=$mysqli->real_escape_string($_POST["nomedit"]);
-	$query="update AUTORS SET NOM_AUT = '$nomedit' where ID_AUT=$modificacion   ";
-	$cursor=$mysqli->query($query)OR die($query);
+	$nacionalitat=$_POST["selectNacionalitat"];
+	if($nacionalitat===""){
+	$query="update AUTORS SET NOM_AUT = '$nomedit', FK_NACIONALITAT = null where ID_AUT=$modificacion";
+	} else {
+	$query="update AUTORS SET NOM_AUT = '$nomedit', FK_NACIONALITAT = '$nacionalitat' where ID_AUT=$modificacion";
+	}
+	
+	$mysqli->query($query)OR die($query);
 }
 /* FIN COMPROBACION DEL BOTON CONFIRMAR */
 /* FIN DEL COMPROBAR BOTON*/
@@ -71,8 +80,9 @@ if(isset($_POST["inputnouautor"])){
 
 		$nouautor=trim($nouautor," ");
 		if(strlen($nouautor)!=0){
-			$query='INSERT INTO AUTORS(ID_AUT, NOM_AUT) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'")';
-			$cursor=$mysqli->query($query)OR die($query);
+			$nacionalitat=$_POST["selectNacionalitatNou"];
+			$query='INSERT INTO AUTORS(ID_AUT, NOM_AUT , FK_NACIONALITAT) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'","'.$nacionalitat.'")';
+			$mysqli->query($query)OR die($query);
 		}
 	}
 	
@@ -82,7 +92,7 @@ if(isset($_POST["inputnouautor"])){
 if(isset($_POST["borrar"])){
 	$borrar=$_POST["borrar"];
 	$query="delete from AUTORS where ID_AUT=$borrar";
-	$cursor=$mysqli->query($query)OR die($query);
+	$mysqli->query($query)OR die($query);
 }
 /* FIN BORRAR AUTOR*/
 
@@ -164,7 +174,7 @@ $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or
 <?php
 echo "<table>";
 		echo "<tr>";
- echo "<td>ID Autor</td><td>Nom Autor</td><td>Nacionalitat</td>"; 
+ echo "<td>ID Autor</td><td>Nom Autor</td><td>Nacionalitat</td><td></td>"; 
 		echo "</tr>";
 if ($cursor=$mysqli->query($query)OR die($query)) {
 	while ($row = $cursor->fetch_assoc()) {
@@ -172,7 +182,7 @@ if ($cursor=$mysqli->query($query)OR die($query)) {
 		if($idaut==$row["ID_AUT"]){
 			 echo "<td>".$row["ID_AUT"]."</td>
 			 <td><input form='form' type='text' name='nomedit' value='{$row["NOM_AUT"]}'></td>
-			 <td>".creacionSelect($mysqli,$querySelect,'nacionalitat','FK_NACIONALITAT','FK_NACIONALITAT','form')."</td>
+			 <td>".creacionSelect($mysqli,$querySelect,'selectNacionalitat',$row['FK_NACIONALITAT'],'NACIONALITAT','NACIONALITAT','form')."</td>
 			 <td><button form='form' type='submit' name='cancelar'>Cancelar</button></td><td><button form='form' name='modificacion' value=".$row['ID_AUT'].">Confirmar</button></td>";
 		} else {
 
@@ -184,7 +194,7 @@ if ($cursor=$mysqli->query($query)OR die($query)) {
  }
 echo "</table>";
 echo "<br><label for='nouautor'>Afegir nou Atutor</label><br>";
-echo "<input form='form' type='text' name='inputnouautor'></td><button form='form' type=input name='nou'>Añadir</button><br>";
+echo "<input form='form' type='text' name='inputnouautor'>".creacionSelect($mysqli,$querySelect,'selectNacionalitatNou',"",'NACIONALITAT','NACIONALITAT','form')."<button form='form' type=input name='nou'>Añadir</button><br>";
 echo "$pagina/$paginas";
 $mysqli->close();
 echo "</body>";
