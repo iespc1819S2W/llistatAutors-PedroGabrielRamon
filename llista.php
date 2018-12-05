@@ -41,6 +41,16 @@ $ordre="desc";
 $quien="NOM_AUT";
 echo "Ordenado por: NOM_AUT DESC <br>";
 };
+if(isset($_POST["nat_aut_asc"])){
+$ordre="asc";
+$quien="FK_NACIONALITAT";
+echo "Ordenado por: FK_NACIONALITAT ASC<br>";
+};
+if(isset($_POST["nat_aut_desc"])){
+$ordre="desc";
+$quien="FK_NACIONALITAT";
+echo "Ordenado por: FK_NACIONALITAT DESC <br>";
+};
 /* FIN DE ORDENACION */
 /* FILTRO */
 if(isset($_POST["filtro"])){
@@ -56,9 +66,6 @@ if(isset($_POST["editar"])){
 }
 /* COMPROBACION DEL BOTON CONFIRMAR */
 if(isset($_POST["modificacion"])){
-	echo "<pre>";
-	print_r($_POST);
-	echo "</pre>";
 	$modificacion=$_POST["modificacion"];
 	$nomedit=$mysqli->real_escape_string($_POST["nomedit"]);
 	$nacionalitat=$_POST["selectNacionalitat"];
@@ -81,7 +88,12 @@ if(isset($_POST["inputnouautor"])){
 		$nouautor=trim($nouautor," ");
 		if(strlen($nouautor)!=0){
 			$nacionalitat=$_POST["selectNacionalitatNou"];
-			$query='INSERT INTO AUTORS(ID_AUT, NOM_AUT , FK_NACIONALITAT) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'","'.$nacionalitat.'")';
+			if($nacionalitat===""){
+				$query='INSERT INTO AUTORS(ID_AUT, NOM_AUT , FK_NACIONALITAT) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'",null)';
+			} else {
+				$query='INSERT INTO AUTORS(ID_AUT, NOM_AUT , FK_NACIONALITAT) VALUES ((SELECT MAX(ID_AUT)+1 FROM AUTORS as max),"'.$nouautor.'","'.$nacionalitat.'")';
+			}
+			
 			$mysqli->query($query)OR die($query);
 		}
 	}
@@ -147,7 +159,6 @@ $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or
 <form id="form" action='llista.php' METHOD='POST'>
 <div>
 	<div>
-	
 	<input type="hidden" name="pagina" value="<?=$pagina?>">
 	<input type="hidden" name="ordre" value="<?=$ordre?>">
 	<input type="hidden" name="quien" value="<?=$quien?>">
@@ -162,13 +173,16 @@ $query="select count(*) as numero from AUTORS where ID_AUT like '".$filtro."' or
 	<button name='nom_aut_asc'>Nom ascendent</button>
 	<button name='nom_aut_desc'>Nom descendent</button>
 	</div>
-
-</div>
-<div class="pagination">
-	<button name="primero">&laquo;</a>
-	<button name="atras">❮</a>
-	<button name="siguiente">❯</a>
-	<button name="ultimo">&raquo;</a>
+	<div>
+	<button name='nat_aut_asc'>Nacionalitat ascendent</button>
+	<button name='nat_aut_desc'>Nacionalitat descendent</button>
+	</div>
+	<div>
+			<label for='nouautor'>Afegir nou Autor</label><br>
+<input form='form' type='text' name='inputnouautor'><?php echo creacionSelect($mysqli,$querySelect,'selectNacionalitatNou',"",'NACIONALITAT','NACIONALITAT','form')
+?>
+	<button form='form' type=input name='nou'>Añadir</button> 
+	</div>
 </div>
  </form>
 <?php
@@ -193,8 +207,13 @@ if ($cursor=$mysqli->query($query)OR die($query)) {
  $cursor->free();
  }
 echo "</table>";
-echo "<br><label for='nouautor'>Afegir nou Atutor</label><br>";
-echo "<input form='form' type='text' name='inputnouautor'>".creacionSelect($mysqli,$querySelect,'selectNacionalitatNou',"",'NACIONALITAT','NACIONALITAT','form')."<button form='form' type=input name='nou'>Añadir</button><br>";
+echo '<div class="pagination">';
+echo	'<button form="form" name="primero">&laquo;</a>';
+echo	'<button form="form" name="atras">❮</a>';
+echo	'<button form="form" name="siguiente">❯</a>';
+echo	'<button form="form" name="ultimo">&raquo;</a>';
+echo '</div>';
+echo "<br>";
 echo "$pagina/$paginas";
 $mysqli->close();
 echo "</body>";
